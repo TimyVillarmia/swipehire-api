@@ -6,8 +6,8 @@ using api.Dtos.Recruit;
 using api.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
+using BCrypt.Net;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace api.Controllers
 {
@@ -50,7 +50,7 @@ namespace api.Controllers
                         Firstname = i.Firstname,
                         Lastname = i.Lastname,
                         Email = i.Email,
-                        ContactNumber = i.ContactNumber // ✅ Added this line
+                        ContactNumber = i.ContactNumber
                     }).ToList(),
                     Recruits = a.Recruits.Select(r => new RecruitDto
                     {
@@ -65,7 +65,6 @@ namespace api.Controllers
 
             return Ok(accounts);
         }
-
 
         // ✅ GET: api/account/{id}
         [HttpGet("{id}")]
@@ -114,7 +113,7 @@ namespace api.Controllers
             return Ok(account);
         }
 
-        // ✅ POST: api/account
+        // ✅ POST: api/account (Registration)
         [HttpPost]
         public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto dto)
         {
@@ -174,7 +173,6 @@ namespace api.Controllers
                 account.Password = HashPassword(dto.Password);
             }
             account.AccountTypeId = dto.AccountTypeId;
-            // account.AccountType = accountType;
 
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
@@ -189,7 +187,6 @@ namespace api.Controllers
             var account = await _context.Accounts
                 .Include(a => a.Interns)
                 .Include(a => a.Recruits)
-                // .Include(a => a.AccountType)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (account == null) return NotFound();
@@ -203,11 +200,10 @@ namespace api.Controllers
             return NoContent();
         }
 
+        // ✅ Secure Password Hashing
         private string HashPassword(string password)
         {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
     }
 }
