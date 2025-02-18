@@ -45,14 +45,14 @@ namespace api.Data
                 .HasOne(s => s.Recruit)
                 .WithMany(r => r.Swipes)
                 .HasForeignKey(s => s.RecruitId)
-                .OnDelete(DeleteBehavior.Restrict);  // 🔴 Change to Restrict
+                .OnDelete(DeleteBehavior.Restrict);  // Change to Restrict
 
             // One-to-Many: Intern → Swipes
             modelBuilder.Entity<Swipe>()
                 .HasOne(s => s.Intern)
                 .WithMany()
                 .HasForeignKey(s => s.InternId)
-                .OnDelete(DeleteBehavior.Restrict);  // 🔴 Change to Restrict
+                .OnDelete(DeleteBehavior.Restrict);  // Change to Restrict
 
             // ✅ Correct Many-to-Many Configuration (Intern ↔ Field)
             modelBuilder.Entity<Intern>()
