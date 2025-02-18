@@ -25,16 +25,16 @@ namespace api.Controllers
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == loginDto.Email);
             if (account == null)
             {
-                return Unauthorized(new { message = "Invalid email or password" });
+                return Unauthorized(new { message = "Denied!" });
             }
 
             // Verify the password using BCrypt
             if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, account.Password))
             {
-                return Unauthorized(new { message = "Invalid email or password" });
+                return Unauthorized(new { message = "Denied!" });
             }
 
-            return Ok(new { message = "Login successful", accountId = account.Id });
+            return Ok(new { message = "Success!", accountId = account.Id });
         }
     }
 }
