@@ -17,12 +17,14 @@ namespace api.Controllers
     {
         private readonly AppDbContext _context;
 
-        public AccountController(AppDbContext context)
+        private readonly AzureBlobService _azureBlobService;
+
+        public AccountController(AppDbContext context, AzureBlobService azureBlobService)
         {
             _context = context;
+            _azureBlobService = azureBlobService;
         }
 
-        // ✅ GET: api/account
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
         {
@@ -43,6 +45,9 @@ namespace api.Controllers
                             Id = a.AccountType.Id,
                             TypeName = a.AccountType.TypeName
                         }
+                        : null,
+                    InternPictureUrl = !string.IsNullOrEmpty(a.InternPicture) 
+                        ? _azureBlobService.GetFileUrl(a.InternPicture) 
                         : null,
                     Interns = a.Interns.Select(i => new InternDto
                     {
@@ -66,7 +71,6 @@ namespace api.Controllers
             return Ok(accounts);
         }
 
-        // ✅ GET: api/account/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountDto>> GetAccount(int id)
         {
@@ -88,6 +92,9 @@ namespace api.Controllers
                             Id = a.AccountType.Id,
                             TypeName = a.AccountType.TypeName
                         }
+                        : null,
+                    InternPictureUrl = !string.IsNullOrEmpty(a.InternPicture) 
+                        ? _azureBlobService.GetFileUrl(a.InternPicture) 
                         : null,
                     Interns = a.Interns.Select(i => new InternDto
                     {
@@ -113,14 +120,22 @@ namespace api.Controllers
             return Ok(account);
         }
 
-        // ✅ POST: api/account (Registration)
+
+        // ✅ POST: api/account (Registration with Image Upload)
         [HttpPost]
-        public async Task<ActionResult<AccountDto>> CreateAccount(CreateAccountDto dto)
+        public async Task<ActionResult<AccountDto>> CreateAccount([FromForm] CreateAccountDto dto)
         {
             var accountType = await _context.AccountTypes.FindAsync(dto.AccountTypeId);
             if (accountType == null) return BadRequest("Invalid AccountTypeId");
 
             var hashedPassword = HashPassword(dto.Password);
+
+            string fileName = string.Empty;
+            if (dto.InternPicture != null && dto.InternPicture.Length > 0)
+            {
+                // Upload file to Azure Blob Storage
+                fileName = await _azureBlobService.UploadFileAsync(dto.InternPicture);
+            }
 
             var account = new Account
             {
@@ -129,7 +144,8 @@ namespace api.Controllers
                 Email = dto.Email,
                 Password = hashedPassword,
                 AccountTypeId = dto.AccountTypeId,
-                AccountType = accountType
+                AccountType = accountType,
+                InternPicture = fileName // Store only the file name in the database
             };
 
             _context.Accounts.Add(account);
@@ -142,6 +158,7 @@ namespace api.Controllers
                 Lastname = account.Lastname,
                 Email = account.Email,
                 CreatedAt = account.CreatedAt,
+                InternPicture = dto.InternPicture, // Include image in response
                 AccountType = new AccountTypeDto
                 {
                     Id = account.AccountType.Id,

@@ -1,1 +1,2 @@
 # swipehire-api
+<!-- "Server=tcp:swipehire.database.windows.net,1433;Initial Catalog=swipehire;Persist Security Info=False;User ID=swipehireserver;Password=2NAQL0Owz9J1RD;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" -->

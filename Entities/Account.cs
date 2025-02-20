@@ -15,6 +15,9 @@ namespace api.Entities
 
         public required AccountType AccountType { get; set; } // Many-to-One Navigation Property
 
+        public string? InternPicture { get; set; }
+
+
         [Required]
         [MaxLength(100)]
         public required string Firstname { get; set; }

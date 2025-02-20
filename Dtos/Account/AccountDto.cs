@@ -8,6 +8,9 @@ namespace api.Dtos.Account
     public class AccountDto
     {
         public int Id { get; set; }
+        public IFormFile? InternPicture { get; set; }
+        // ✅ Return the full image URL in API responses
+        public string? InternPictureUrl { get; set; }   
         public string Firstname { get; set; } = string.Empty;
         public string Lastname { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
