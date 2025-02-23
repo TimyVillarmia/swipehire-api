@@ -27,6 +27,7 @@ public class CreateInternDto
     public required string Specialization { get; set; }
 
     public string? Description { get; set; }
+    public string? Skills {get; set;}
 
     [Required]
     public int AccountId { get; set; }

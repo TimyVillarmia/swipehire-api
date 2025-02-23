@@ -39,6 +39,7 @@ namespace api.Controllers
                 ContactNumber = internDto.ContactNumber,
                 Email = internDto.Email,
                 Specialization = internDto.Specialization,
+                Skills = internDto.Skills,
                 Description = internDto.Description,
                 AccountId = internDto.AccountId,
                 Account = account,
@@ -98,6 +99,7 @@ namespace api.Controllers
             intern.ContactNumber = internDto.ContactNumber;
             intern.Email = internDto.Email;
             intern.Specialization = internDto.Specialization;
+            intern.Skills = internDto.Skills;
             intern.Description = internDto.Description;
             
             await _context.SaveChangesAsync();

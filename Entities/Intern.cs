@@ -34,6 +34,8 @@ public class Intern
     [MaxLength(100)]
     public required string Specialization { get; set; }
 
+    public string? Skills {get;set;}
+
     // Removed single 'Field' property to avoid confusion
     public List<Field> Fields { get; set; } = new();
 
