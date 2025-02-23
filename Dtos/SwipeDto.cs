@@ -8,5 +8,5 @@ public class SwipeDto
     public int RecruitId { get; set; }
     public int InternId { get; set; }
     public DateTime SwipeDate { get; set; }
-    public bool Status { get; set; }
+    public string? Status { get; set; }
 }

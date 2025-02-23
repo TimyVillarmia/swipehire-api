@@ -17,6 +17,6 @@ public class Swipe
 
     public DateTime SwipeDate { get; set; } = DateTime.Now;
 
-    [Column(TypeName = "bit")]
-    public bool Status { get; set; }  // True (liked), False (disliked)
+    [Column(TypeName = "nvarchar(10)")]
+    public string? Status { get; set; }
 }
