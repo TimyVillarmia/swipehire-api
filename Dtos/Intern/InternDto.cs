@@ -19,14 +19,14 @@ namespace api.Dtos.Intern
         // Education Details
         public string School { get; set; } = string.Empty;
         public string Degree { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
         // Work Experience Details
         public string Company { get; set; } = string.Empty;
         public string? CompanyLocation { get; set; }
         public string Position { get; set; } = string.Empty;
-        public DateTime StartWorkDate { get; set; }
+        public DateTime? StartWorkDate { get; set; }
         public DateTime? EndWorkDate { get; set; }
     }
 }

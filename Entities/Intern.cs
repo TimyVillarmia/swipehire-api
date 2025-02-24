@@ -54,7 +54,7 @@ public class Intern
     // Nullable Foreign Key for Education
     public string School { get; set; } = string.Empty;
     public string Degree { get; set; } = string.Empty;
-    public DateTime StartDate { get; set; }
+    public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     [Required]
     [MaxLength(200)]
@@ -68,7 +68,7 @@ public class Intern
     public string Position { get; set; } = string.Empty;
 
     [Required]
-    public DateTime StartWorkDate { get; set; }
+    public DateTime? StartWorkDate { get; set; }
 
     public DateTime? EndWorkDate { get; set; }
 

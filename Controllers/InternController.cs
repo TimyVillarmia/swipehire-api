@@ -135,41 +135,39 @@ namespace api.Controllers
                 return NotFound("Intern not found for the given AccountId.");
             }
 
-            // Update intern details
-            intern.Firstname = internDto.Firstname;
-            intern.Lastname = internDto.Lastname;
-            intern.ContactNumber = internDto.ContactNumber;
-            intern.Email = internDto.Email;
-            intern.Specialization = internDto.Specialization;
-            intern.Skills = internDto.Skills;
-            intern.Description = internDto.Description;
+            // Update only provided values, keep existing ones if null
+            intern.Firstname = !string.IsNullOrWhiteSpace(internDto.Firstname) ? internDto.Firstname : intern.Firstname;
+            intern.Lastname = !string.IsNullOrWhiteSpace(internDto.Lastname) ? internDto.Lastname : intern.Lastname;
+            intern.ContactNumber = !string.IsNullOrWhiteSpace(internDto.ContactNumber) ? internDto.ContactNumber : intern.ContactNumber;
+            intern.Email = !string.IsNullOrWhiteSpace(internDto.Email) ? internDto.Email : intern.Email;
+            intern.Specialization = !string.IsNullOrWhiteSpace(internDto.Specialization) ? internDto.Specialization : intern.Specialization;
+            intern.Skills = !string.IsNullOrWhiteSpace(internDto.Skills) ? internDto.Skills : intern.Skills;
+            intern.Description = !string.IsNullOrWhiteSpace(internDto.Description) ? internDto.Description : intern.Description;
 
-            // Update Education Fields
-            intern.School = internDto.School;
-            intern.Degree = internDto.Degree;
-            intern.StartDate = internDto.StartDate;
-            intern.EndDate = internDto.EndDate;
+            // Update Education fields if provided
+            intern.School = !string.IsNullOrWhiteSpace(internDto.School) ? internDto.School : intern.School;
+            intern.Degree = !string.IsNullOrWhiteSpace(internDto.Degree) ? internDto.Degree : intern.Degree;
+            intern.StartDate = internDto.StartDate ?? intern.StartDate;
+            intern.EndDate = internDto.EndDate ?? intern.EndDate;
 
-            // Validate that EndDate is not before StartDate
             if (intern.EndDate.HasValue && intern.EndDate < intern.StartDate)
             {
                 return BadRequest("End date cannot be before start date.");
             }
 
-            // Update Work Experience Fields
-            intern.Company = internDto.Company;
-            intern.CompanyLocation = internDto.CompanyLocation;
-            intern.Position = internDto.Position;
-            intern.StartWorkDate = internDto.StartWorkDate;
-            intern.EndWorkDate = internDto.EndWorkDate;
+            // Update Work Experience fields if provided
+            intern.Company = !string.IsNullOrWhiteSpace(internDto.Company) ? internDto.Company : intern.Company;
+            intern.CompanyLocation = !string.IsNullOrWhiteSpace(internDto.CompanyLocation) ? internDto.CompanyLocation : intern.CompanyLocation;
+            intern.Position = !string.IsNullOrWhiteSpace(internDto.Position) ? internDto.Position : intern.Position;
+            intern.StartWorkDate = internDto.StartWorkDate ?? intern.StartWorkDate;
+            intern.EndWorkDate = internDto.EndWorkDate ?? intern.EndWorkDate;
 
-            // Validate that EndWorkDate is not before StartWorkDate
             if (intern.EndWorkDate.HasValue && intern.EndWorkDate < intern.StartWorkDate)
             {
                 return BadRequest("End work date cannot be before start work date.");
             }
 
-            // Update Field (if applicable)
+            // Update Field (One-to-One)
             if (internDto.FieldId.HasValue)
             {
                 var field = await _context.Fields.FindAsync(internDto.FieldId.Value);
@@ -178,6 +176,7 @@ namespace api.Controllers
                     return BadRequest("Invalid FieldId provided.");
                 }
 
+                // Check if another intern is already assigned to this field
                 var existingInternWithField = await _context.Interns.FirstOrDefaultAsync(i => i.FieldId == internDto.FieldId.Value);
                 if (existingInternWithField != null && existingInternWithField.Id != intern.Id)
                 {
@@ -187,15 +186,11 @@ namespace api.Controllers
                 intern.FieldId = internDto.FieldId.Value;
                 intern.Field = field;
             }
-            else
-            {
-                intern.FieldId = null;
-                intern.Field = null;
-            }
 
             await _context.SaveChangesAsync();
             return Ok(intern);
         }
+
 
 
 
