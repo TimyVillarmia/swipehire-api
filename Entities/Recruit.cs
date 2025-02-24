@@ -26,9 +26,12 @@ public class Recruit
     [MaxLength(150)]
     public required string Company { get; set; }
 
-    [Required]
-    [MaxLength(100)]
-    public required string Field { get; set; }
+    // ✅ Foreign Key for Field (Many-to-One)
+    [ForeignKey("Field")]
+    public int? FieldId { get; set; }
+
+    // ✅ Navigation Property for Field
+    public Field? Field { get; set; }
 
     [Required]
     [MaxLength(255)]
