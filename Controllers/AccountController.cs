@@ -169,9 +169,8 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, accountDto);
         }
 
-        // ✅ PUT: api/account/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAccount(int id, UpdateAccountDto dto)
+        public async Task<IActionResult> UpdateAccount(int id, [FromForm] UpdateAccountDto dto, IFormFile? internPicture)
         {
             var account = await _context.Accounts
                 .Include(a => a.AccountType)
@@ -185,17 +184,34 @@ namespace api.Controllers
             account.Firstname = dto.Firstname;
             account.Lastname = dto.Lastname;
             account.Email = dto.Email;
+            
             if (!string.IsNullOrEmpty(dto.Password))
             {
                 account.Password = HashPassword(dto.Password);
             }
+
             account.AccountTypeId = dto.AccountTypeId;
+
+            // ✅ Handle Image Upload
+            if (internPicture != null)
+            {
+                // Delete old picture if it exists
+                if (!string.IsNullOrEmpty(account.InternPicture))
+                {
+                    await _azureBlobService.DeleteFileAsync(account.InternPicture);
+                }
+
+                // Upload new picture
+                var newFileName = await _azureBlobService.UploadFileAsync(internPicture);
+                account.InternPicture = newFileName;
+            }
 
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
         // ✅ DELETE: api/account/{id}
         [HttpDelete("{id}")]
