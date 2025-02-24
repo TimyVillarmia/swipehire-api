@@ -29,7 +29,7 @@ namespace api.Controllers
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
         {
             var accounts = await _context.Accounts
-                .Include(a => a.AccountType) 
+                .Include(a => a.AccountType)
                 .Include(a => a.Interns)
                 .Include(a => a.Recruits)
                 .Select(a => new AccountDto
@@ -55,7 +55,20 @@ namespace api.Controllers
                         Firstname = i.Firstname,
                         Lastname = i.Lastname,
                         Email = i.Email,
-                        ContactNumber = i.ContactNumber
+                        ContactNumber = i.ContactNumber,
+                        Specialization = i.Specialization,
+                        Skills = i.Skills,
+                        Description = i.Description,
+                        School = i.School,
+                        Degree = i.Degree,
+                        StartDate = i.StartDate,
+                        EndDate = i.EndDate,
+                        Company = i.Company,
+                        CompanyLocation = i.CompanyLocation,
+                        Position = i.Position,
+                        StartWorkDate = i.StartWorkDate,
+                        EndWorkDate = i.EndWorkDate,
+                        HasProfile = i.HasProfile
                     }).ToList(),
                     Recruits = a.Recruits.Select(r => new RecruitDto
                     {
@@ -70,6 +83,7 @@ namespace api.Controllers
 
             return Ok(accounts);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<AccountDto>> GetAccount(int id)
@@ -102,7 +116,20 @@ namespace api.Controllers
                         Firstname = i.Firstname,
                         Lastname = i.Lastname,
                         Email = i.Email,
-                        ContactNumber = i.ContactNumber
+                        ContactNumber = i.ContactNumber,
+                        Specialization = i.Specialization,
+                        Skills = i.Skills,
+                        Description = i.Description,
+                        School = i.School,
+                        Degree = i.Degree,
+                        StartDate = i.StartDate,
+                        EndDate = i.EndDate,
+                        Company = i.Company,
+                        CompanyLocation = i.CompanyLocation,
+                        Position = i.Position,
+                        StartWorkDate = i.StartWorkDate,
+                        EndWorkDate = i.EndWorkDate,
+                        HasProfile = i.HasProfile
                     }).ToList(),
                     Recruits = a.Recruits.Select(r => new RecruitDto
                     {
@@ -119,6 +146,7 @@ namespace api.Controllers
 
             return Ok(account);
         }
+
 
 
         // ✅ POST: api/account (Registration with Image Upload)
@@ -178,30 +206,28 @@ namespace api.Controllers
 
             if (account == null) return NotFound();
 
+            // ✅ Ensure AccountTypeId exists in the database
             var accountType = await _context.AccountTypes.FindAsync(dto.AccountTypeId);
             if (accountType == null) return BadRequest("Invalid AccountTypeId");
 
-            account.Firstname = dto.Firstname;
-            account.Lastname = dto.Lastname;
-            account.Email = dto.Email;
-            
+            // ✅ Update account fields only if values are provided
+            account.Firstname = !string.IsNullOrEmpty(dto.Firstname) ? dto.Firstname : account.Firstname;
+            account.Lastname = !string.IsNullOrEmpty(dto.Lastname) ? dto.Lastname : account.Lastname;
+            account.Email = !string.IsNullOrEmpty(dto.Email) ? dto.Email : account.Email;
+            account.AccountTypeId = dto.AccountTypeId; // Since it's required, always update it.
+
             if (!string.IsNullOrEmpty(dto.Password))
             {
                 account.Password = HashPassword(dto.Password);
             }
 
-            account.AccountTypeId = dto.AccountTypeId;
-
             // ✅ Handle Image Upload
             if (internPicture != null)
             {
-                // Delete old picture if it exists
                 if (!string.IsNullOrEmpty(account.InternPicture))
                 {
                     await _azureBlobService.DeleteFileAsync(account.InternPicture);
                 }
-
-                // Upload new picture
                 var newFileName = await _azureBlobService.UploadFileAsync(internPicture);
                 account.InternPicture = newFileName;
             }
@@ -211,6 +237,35 @@ namespace api.Controllers
 
             return NoContent();
         }
+
+        // [Consumes("multipart/form-data")]
+        // [HttpPut("{id}/intern-picture")]
+        // public async Task<IActionResult> UpdateInternPicture(int id, [FromForm] IFormFile internPicture)
+        // {
+        //     var account = await _context.Accounts.FindAsync(id);
+        //     if (account == null) return NotFound();
+
+        //     if (internPicture == null || internPicture.Length == 0)
+        //     {
+        //         return BadRequest("No image file provided.");
+        //     }
+
+        //     // ✅ Delete old picture if it exists
+        //     if (!string.IsNullOrEmpty(account.InternPicture))
+        //     {
+        //         await _azureBlobService.DeleteFileAsync(account.InternPicture);
+        //     }
+
+        //     // ✅ Upload new picture
+        //     var newFileName = await _azureBlobService.UploadFileAsync(internPicture);
+        //     account.InternPicture = newFileName;
+
+        //     _context.Accounts.Update(account);
+        //     await _context.SaveChangesAsync();
+
+        //     return NoContent();
+        // }
+
 
 
         // ✅ DELETE: api/account/{id}
