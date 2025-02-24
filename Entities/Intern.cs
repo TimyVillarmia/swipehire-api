@@ -12,6 +12,15 @@ public class Intern
     [Key]
     public int Id { get; set; }
 
+    // Foreign Key for Account (Many-to-One)
+    [Required]
+    [ForeignKey("AccountId")]
+    public int AccountId { get; set; }
+
+    [JsonIgnore]
+    [ForeignKey("AccountId")]
+    public Account Account { get; set; } = null!;
+
     [Required]
     [MaxLength(100)]
     public required string Firstname { get; set; }
@@ -36,26 +45,33 @@ public class Intern
 
     public string? Skills {get;set;}
 
-    // Removed single 'Field' property to avoid confusion
-    public List<Field> Fields { get; set; } = new();
+    [ForeignKey("Field")]
+    public int? FieldId { get; set; }
+
+    public Field? Field { get; set; }
 
     public string? Description { get; set; }
-
-    // Foreign Key for Account (Many-to-One)
-    [Required]
-    [ForeignKey("AccountId")]
-    public int AccountId { get; set; }
-
-    [JsonIgnore]
-    [ForeignKey("AccountId")]
-    public Account Account { get; set; } = null!;
-
     // Nullable Foreign Key for Education
-    public int? EducationId { get; set; }
+    public string School { get; set; } = string.Empty;
+    public string Degree { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    [Required]
+    [MaxLength(200)]
+    public string Company { get; set; } = string.Empty;
 
-    public List<InternEducation> InternEducations { get; set; } = new();
+    [MaxLength(255)]
+    public string? CompanyLocation { get; set; }
 
-    public List<InternWorkExperience> WorkExperiences { get; set; } = new();
+    [Required]
+    [MaxLength(150)]
+    public string Position { get; set; } = string.Empty;
+
+    [Required]
+    public DateTime StartWorkDate { get; set; }
+
+    public DateTime? EndWorkDate { get; set; }
+
 
     [DefaultValue(false)]
     public bool HasProfile { get; set; }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -11,9 +12,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250224001607_UpdatedFieldToInternRelation")]
+    partial class UpdatedFieldToInternRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,21 @@ namespace api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("InternEducationMapping", b =>
+                {
+                    b.Property<int>("InternEducationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InternId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InternEducationId", "InternId");
+
+                    b.HasIndex("InternId");
+
+                    b.ToTable("InternEducationMapping");
+                });
 
             modelBuilder.Entity("api.Entities.Account", b =>
                 {
@@ -112,37 +130,21 @@ namespace api.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Company")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CompanyLocation")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("ContactNumber")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<string>("Degree")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EducationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("EndWorkDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int?>("FieldId")
                         .HasColumnType("int");
@@ -160,15 +162,6 @@ namespace api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Position")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("School")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Skills")
                         .HasColumnType("nvarchar(max)");
 
@@ -176,12 +169,6 @@ namespace api.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartWorkDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -192,6 +179,73 @@ namespace api.Migrations
                         .HasFilter("[FieldId] IS NOT NULL");
 
                     b.ToTable("Interns");
+                });
+
+            modelBuilder.Entity("api.Entities.InternEducation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("School")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InternEducations");
+                });
+
+            modelBuilder.Entity("api.Entities.InternWorkExperience", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Company")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CompanyLocation")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InternId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InternId");
+
+                    b.ToTable("InternWorkExperiences");
                 });
 
             modelBuilder.Entity("api.Entities.Recruit", b =>
@@ -276,6 +330,21 @@ namespace api.Migrations
                     b.ToTable("Swipes");
                 });
 
+            modelBuilder.Entity("InternEducationMapping", b =>
+                {
+                    b.HasOne("api.Entities.InternEducation", null)
+                        .WithMany()
+                        .HasForeignKey("InternEducationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("api.Entities.Intern", null)
+                        .WithMany()
+                        .HasForeignKey("InternId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("api.Entities.Account", b =>
                 {
                     b.HasOne("api.Entities.AccountType", "AccountType")
@@ -303,6 +372,17 @@ namespace api.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Field");
+                });
+
+            modelBuilder.Entity("api.Entities.InternWorkExperience", b =>
+                {
+                    b.HasOne("api.Entities.Intern", "Intern")
+                        .WithMany("WorkExperiences")
+                        .HasForeignKey("InternId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Intern");
                 });
 
             modelBuilder.Entity("api.Entities.Recruit", b =>
@@ -350,6 +430,11 @@ namespace api.Migrations
             modelBuilder.Entity("api.Entities.Field", b =>
                 {
                     b.Navigation("Intern");
+                });
+
+            modelBuilder.Entity("api.Entities.Intern", b =>
+                {
+                    b.Navigation("WorkExperiences");
                 });
 
             modelBuilder.Entity("api.Entities.Recruit", b =>

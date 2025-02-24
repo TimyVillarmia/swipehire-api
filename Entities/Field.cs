@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace api.Entities;
 
@@ -12,5 +13,6 @@ public class Field
     public string Name { get; set; } = string.Empty;
 
     // ✅ Many-to-Many Relationship: Field ↔ Intern
-    public List<Intern> Interns { get; set; } = new List<Intern>();
+    [JsonIgnore]
+    public Intern? Intern { get; set; }
 }

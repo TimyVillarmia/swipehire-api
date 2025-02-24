@@ -13,8 +13,6 @@ namespace api.Data
         public DbSet<Intern> Interns { get; set; }
         public DbSet<Recruit> Recruits { get; set; }
         public DbSet<Swipe> Swipes { get; set; }
-        public DbSet<InternEducation> InternEducations { get; set; }
-        public DbSet<InternWorkExperience> InternWorkExperiences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,43 +52,13 @@ namespace api.Data
                 .HasForeignKey(s => s.InternId)
                 .OnDelete(DeleteBehavior.Restrict);  // Change to Restrict
 
-            // ✅ Correct Many-to-Many Configuration (Intern ↔ Field)
+            // ✅ Configure One-to-One Relationship (Intern ↔ Field)
             modelBuilder.Entity<Intern>()
-            .HasMany(i => i.Fields)
-            .WithMany(f => f.Interns)
-            .UsingEntity<Dictionary<string, object>>(
-                  "InternFieldMapping", // Join Table Name
-                  j => j.HasOne<Field>()
-                        .WithMany()
-                        .HasForeignKey("FieldId")
-                        .OnDelete(DeleteBehavior.NoAction),
-                  j => j.HasOne<Intern>()
-                        .WithMany()
-                        .HasForeignKey("InternId")
-                        .OnDelete(DeleteBehavior.NoAction)
-            );
+                .HasOne(i => i.Field) // One Intern has One Field
+                .WithOne(f => f.Intern) // One Field has One Intern
+                .HasForeignKey<Intern>(i => i.FieldId) // Foreign Key in Intern table
+                .OnDelete(DeleteBehavior.NoAction); // Prevent cascading deletes
 
-
-            modelBuilder.Entity<Intern>()
-                .HasMany(i => i.InternEducations)
-                .WithMany(e => e.Interns)
-                .UsingEntity<Dictionary<string, object>>(
-                    "InternEducationMapping", // Join Table Name
-                    j => j.HasOne<InternEducation>()
-                          .WithMany()
-                          .HasForeignKey("InternEducationId")
-                          .OnDelete(DeleteBehavior.NoAction),
-                    j => j.HasOne<Intern>()
-                          .WithMany()
-                          .HasForeignKey("InternId")
-                          .OnDelete(DeleteBehavior.NoAction)
-                );
-                // Intern ↔ InternWorkExperience (One-to-Many)
-            modelBuilder.Entity<InternWorkExperience>()
-                  .HasOne(iwe => iwe.Intern)
-                  .WithMany(i => i.WorkExperiences)
-                  .HasForeignKey(iwe => iwe.InternId)
-                  .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
