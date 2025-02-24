@@ -39,15 +39,16 @@ namespace api.Controllers
             return Ok(recruits);
         }
 
-        // GET: api/Recruit/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<RecruitDto>> GetRecruit(int id)
+        // GET: api/Recruit/account/{accountId}
+        [HttpGet("account/{accountId}")]
+        public async Task<ActionResult<RecruitDto>> GetRecruitByAccountId(int accountId)
         {
-            var recruit = await _context.Recruits.FindAsync(id);
+            var recruit = await _context.Recruits
+                .FirstOrDefaultAsync(r => r.AccountId == accountId);
 
             if (recruit == null)
             {
-                return NotFound();
+                return NotFound("Recruit not found for the given AccountId.");
             }
 
             return Ok(new RecruitDto
@@ -63,6 +64,7 @@ namespace api.Controllers
                 AccountId = recruit.AccountId
             });
         }
+
 
         // POST: api/Recruit
         [HttpPost]
@@ -91,36 +93,34 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
 
             recruitDto.Id = recruit.Id;
-            return CreatedAtAction(nameof(GetRecruit), new { id = recruit.Id }, recruitDto);
+            return CreatedAtAction(nameof(GetRecruitByAccountId), new { id = recruit.Id }, recruitDto);
         }
 
-        // PUT: api/Recruit/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRecruit(int id, RecruitDto recruitDto)
+        // PUT: api/Recruit/ByAccount/{accountId}
+        [HttpPut("ByAccount/{accountId}")]
+        public async Task<IActionResult> UpdateRecruitByAccountId(int accountId, RecruitDto recruitDto)
         {
-            if (id != recruitDto.Id)
-            {
-                return BadRequest();
-            }
+            var recruit = await _context.Recruits
+                .FirstOrDefaultAsync(r => r.AccountId == accountId);
 
-            var recruit = await _context.Recruits.FindAsync(id);
             if (recruit == null)
             {
-                return NotFound();
+                return NotFound($"No recruit found for AccountId {accountId}.");
             }
 
-            recruit.Firstname = recruitDto.Firstname;
-            recruit.Lastname = recruitDto.Lastname;
-            recruit.Position = recruitDto.Position;
-            recruit.Company = recruitDto.Company;
-            recruit.Field = recruitDto.Field;
-            recruit.Address = recruitDto.Address;
-            recruit.PhoneNumber = recruitDto.PhoneNumber;
-            recruit.AccountId = recruitDto.AccountId;
+            // ✅ Update only provided fields while keeping existing values
+            recruit.Firstname = !string.IsNullOrEmpty(recruitDto.Firstname) ? recruitDto.Firstname : recruit.Firstname;
+            recruit.Lastname = !string.IsNullOrEmpty(recruitDto.Lastname) ? recruitDto.Lastname : recruit.Lastname;
+            recruit.Position = !string.IsNullOrEmpty(recruitDto.Position) ? recruitDto.Position : recruit.Position;
+            recruit.Company = !string.IsNullOrEmpty(recruitDto.Company) ? recruitDto.Company : recruit.Company;
+            recruit.Field = !string.IsNullOrEmpty(recruitDto.Field) ? recruitDto.Field : recruit.Field;
+            recruit.Address = !string.IsNullOrEmpty(recruitDto.Address) ? recruitDto.Address : recruit.Address;
+            recruit.PhoneNumber = !string.IsNullOrEmpty(recruitDto.PhoneNumber) ? recruitDto.PhoneNumber : recruit.PhoneNumber;
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
 
         // DELETE: api/Recruit/{id}
         [HttpDelete("{id}")]
