@@ -55,6 +55,49 @@ namespace api.Controllers
             };
         }
 
+        // GET: api/swipe/byRecruit/{recruitId}
+        [HttpGet("byRecruit/{recruitId}")]
+        public async Task<ActionResult<IEnumerable<SwipeDto>>> GetSwipesByRecruitId(int recruitId)
+        {
+            var swipes = await _context.Swipes
+                .Where(s => s.RecruitId == recruitId)
+                .Select(s => new SwipeDto
+                {
+                    Id = s.Id,
+                    RecruitId = s.RecruitId,
+                    InternId = s.InternId,
+                    SwipeDate = s.SwipeDate,
+                    Status = s.Status ?? "Pending"
+                })
+                .ToListAsync();
+
+            if (swipes.Count == 0) return NotFound($"No swipes found for RecruitId {recruitId}.");
+
+            return Ok(swipes);
+        }
+
+        // GET: api/swipe/byIntern/{internId}
+        [HttpGet("byIntern/{internId}")]
+        public async Task<ActionResult<IEnumerable<SwipeDto>>> GetSwipesByInternId(int internId)
+        {
+            var swipes = await _context.Swipes
+                .Where(s => s.InternId == internId)
+                .Select(s => new SwipeDto
+                {
+                    Id = s.Id,
+                    RecruitId = s.RecruitId,
+                    InternId = s.InternId,
+                    SwipeDate = s.SwipeDate,
+                    Status = s.Status ?? "Pending"
+                })
+                .ToListAsync();
+
+            if (swipes.Count == 0) return NotFound($"No swipes found for InternId {internId}.");
+
+            return Ok(swipes);
+        }
+
+
         // POST: api/swipe
         [HttpPost]
         public async Task<ActionResult<SwipeDto>> CreateSwipe(SwipeDto swipeDto)
