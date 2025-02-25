@@ -14,8 +14,8 @@ namespace api.Dtos.Intern
         public string? Description { get; set; }
         public bool HasProfile { get; set; }
         public int AccountId { get; set; } // Foreign key reference
+        public FieldDto? Field { get; set; }
         public int? FieldId { get; set; }
-
         // Education Details
         public string School { get; set; } = string.Empty;
         public string Degree { get; set; } = string.Empty;

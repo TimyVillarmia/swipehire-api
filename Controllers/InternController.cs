@@ -34,19 +34,12 @@ namespace api.Controllers
             }
 
             // Validate FieldId if provided
-            Field? field = null;
             if (internDto.FieldId.HasValue)
             {
-                field = await _context.Fields.FindAsync(internDto.FieldId.Value);
+                var field = await _context.Fields.FindAsync(internDto.FieldId.Value);
                 if (field == null)
                 {
                     return BadRequest("Invalid FieldId provided.");
-                }
-
-                var existingIntern = await _context.Interns.FirstOrDefaultAsync(i => i.FieldId == internDto.FieldId.Value);
-                if (existingIntern != null)
-                {
-                    return BadRequest("This Field is already assigned to another Intern.");
                 }
             }
 
@@ -60,10 +53,8 @@ namespace api.Controllers
                 Skills = internDto.Skills,
                 Description = internDto.Description,
                 AccountId = internDto.AccountId,
-                Account = account,
-                FieldId = internDto.FieldId,
-                Field = field,
                 HasProfile = false, // Default to false
+                FieldId = internDto.FieldId, // Assign FieldId only
 
                 // New Education Fields
                 School = internDto.School,
@@ -85,25 +76,50 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetInternByAccountId), new { accountId = intern.AccountId }, intern);
         }
 
-
-
-
-
         // READ (Single) by AccountId: api/intern/account/{accountId} (GET)
         [HttpGet("account/{accountId}")]
         public async Task<IActionResult> GetInternByAccountId(int accountId)
         {
             var intern = await _context.Interns
-                .Include(i => i.Account)
-                .Include(i => i.Field)
+                .Include(i => i.Field) // Include Field, but not Account (avoid exposing full Account details)
                 .FirstOrDefaultAsync(i => i.AccountId == accountId);
+
             if (intern == null)
             {
                 return NotFound("No intern found with this AccountId.");
             }
 
-            return Ok(intern);
+            var internDto = new InternDto
+            {
+                Id = intern.Id,
+                Firstname = intern.Firstname,
+                Lastname = intern.Lastname,
+                ContactNumber = intern.ContactNumber,
+                Email = intern.Email,
+                Specialization = intern.Specialization,
+                Skills = intern.Skills,
+                Description = intern.Description,
+                HasProfile = intern.HasProfile,
+                AccountId = intern.AccountId,
+                FieldId = intern.FieldId, // ✅ Ensure FieldId is correctly mapped
+
+                // Education Details
+                School = intern.School,
+                Degree = intern.Degree,
+                StartDate = intern.StartDate,
+                EndDate = intern.EndDate,
+
+                // Work Experience Details
+                Company = intern.Company,
+                CompanyLocation = intern.CompanyLocation,
+                Position = intern.Position,
+                StartWorkDate = intern.StartWorkDate,
+                EndWorkDate = intern.EndWorkDate
+            };
+
+            return Ok(internDto);
         }
+
 
 
         // READ (All): api/intern (GET)
@@ -111,12 +127,40 @@ namespace api.Controllers
         public async Task<IActionResult> GetAllInterns()
         {
             var interns = await _context.Interns
-                .Include(i => i.Account)
-                .Include(i => i.Field)
+                .Include(i => i.Field) // Include Field, avoid full Account details
                 .ToListAsync();
 
-            return Ok(interns);
+            var internDtos = interns.Select(intern => new InternDto
+            {
+                Id = intern.Id,
+                Firstname = intern.Firstname,
+                Lastname = intern.Lastname,
+                ContactNumber = intern.ContactNumber,
+                Email = intern.Email,
+                Specialization = intern.Specialization,
+                Skills = intern.Skills,
+                Description = intern.Description,
+                HasProfile = intern.HasProfile,
+                AccountId = intern.AccountId,
+                FieldId = intern.FieldId, // ✅ Ensure FieldId is included
+
+                // Education Details
+                School = intern.School,
+                Degree = intern.Degree,
+                StartDate = intern.StartDate,
+                EndDate = intern.EndDate,
+
+                // Work Experience Details
+                Company = intern.Company,
+                CompanyLocation = intern.CompanyLocation,
+                Position = intern.Position,
+                StartWorkDate = intern.StartWorkDate,
+                EndWorkDate = intern.EndWorkDate
+            }).ToList();
+
+            return Ok(internDtos);
         }
+
 
         [HttpPut("account/{accountId}")]
         public async Task<IActionResult> UpdateInternByAccountId(int accountId, [FromBody] InternDto internDto)
@@ -135,7 +179,7 @@ namespace api.Controllers
                 return NotFound("Intern not found for the given AccountId.");
             }
 
-            // Update only provided values, keep existing ones if null
+            // Update basic fields
             intern.Firstname = !string.IsNullOrWhiteSpace(internDto.Firstname) ? internDto.Firstname : intern.Firstname;
             intern.Lastname = !string.IsNullOrWhiteSpace(internDto.Lastname) ? internDto.Lastname : intern.Lastname;
             intern.ContactNumber = !string.IsNullOrWhiteSpace(internDto.ContactNumber) ? internDto.ContactNumber : intern.ContactNumber;
@@ -144,7 +188,7 @@ namespace api.Controllers
             intern.Skills = !string.IsNullOrWhiteSpace(internDto.Skills) ? internDto.Skills : intern.Skills;
             intern.Description = !string.IsNullOrWhiteSpace(internDto.Description) ? internDto.Description : intern.Description;
 
-            // Update Education fields if provided
+            // Update Education details
             intern.School = !string.IsNullOrWhiteSpace(internDto.School) ? internDto.School : intern.School;
             intern.Degree = !string.IsNullOrWhiteSpace(internDto.Degree) ? internDto.Degree : intern.Degree;
             intern.StartDate = internDto.StartDate ?? intern.StartDate;
@@ -155,7 +199,7 @@ namespace api.Controllers
                 return BadRequest("End date cannot be before start date.");
             }
 
-            // Update Work Experience fields if provided
+            // Update Work Experience details
             intern.Company = !string.IsNullOrWhiteSpace(internDto.Company) ? internDto.Company : intern.Company;
             intern.CompanyLocation = !string.IsNullOrWhiteSpace(internDto.CompanyLocation) ? internDto.CompanyLocation : intern.CompanyLocation;
             intern.Position = !string.IsNullOrWhiteSpace(internDto.Position) ? internDto.Position : intern.Position;
@@ -168,7 +212,7 @@ namespace api.Controllers
             }
 
             // Update Field (One-to-One)
-            if (internDto.FieldId.HasValue)
+            if (internDto.FieldId.HasValue && internDto.FieldId != intern.FieldId)
             {
                 var field = await _context.Fields.FindAsync(internDto.FieldId.Value);
                 if (field == null)
@@ -176,7 +220,7 @@ namespace api.Controllers
                     return BadRequest("Invalid FieldId provided.");
                 }
 
-                // Check if another intern is already assigned to this field
+                // Ensure no other intern is assigned to this field
                 var existingInternWithField = await _context.Interns.FirstOrDefaultAsync(i => i.FieldId == internDto.FieldId.Value);
                 if (existingInternWithField != null && existingInternWithField.Id != intern.Id)
                 {
@@ -188,8 +232,39 @@ namespace api.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Ok(intern);
+
+            // Convert updated intern to DTO for response
+            var updatedInternDto = new InternDto
+            {
+                Id = intern.Id,
+                Firstname = intern.Firstname,
+                Lastname = intern.Lastname,
+                ContactNumber = intern.ContactNumber,
+                Email = intern.Email,
+                Specialization = intern.Specialization,
+                Skills = intern.Skills,
+                Description = intern.Description,
+                HasProfile = intern.HasProfile,
+                AccountId = intern.AccountId,
+                FieldId = intern.FieldId,
+
+                // Education Details
+                School = intern.School,
+                Degree = intern.Degree,
+                StartDate = intern.StartDate,
+                EndDate = intern.EndDate,
+
+                // Work Experience Details
+                Company = intern.Company,
+                CompanyLocation = intern.CompanyLocation,
+                Position = intern.Position,
+                StartWorkDate = intern.StartWorkDate,
+                EndWorkDate = intern.EndWorkDate
+            };
+
+            return Ok(updatedInternDto);
         }
+
 
 
 

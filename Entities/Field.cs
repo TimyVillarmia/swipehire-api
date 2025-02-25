@@ -14,5 +14,5 @@ public class Field
 
     // ✅ Many-to-Many Relationship: Field ↔ Intern
     [JsonIgnore]
-    public Intern? Intern { get; set; }
+    public ICollection<Intern> Interns { get; set; } = new List<Intern>();
 }

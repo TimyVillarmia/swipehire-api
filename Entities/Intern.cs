@@ -45,10 +45,11 @@ public class Intern
 
     public string? Skills {get;set;}
 
-    [ForeignKey("Field")]
+    // ✅ Foreign Key for Field (Many-to-One)
+    [ForeignKey("FieldId")]
     public int? FieldId { get; set; }
 
-    public Field? Field { get; set; }
+    public Field? Field { get; set; } // ✅ Navigation property
 
     public string? Description { get; set; }
     // Nullable Foreign Key for Education

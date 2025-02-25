@@ -238,36 +238,6 @@ namespace api.Controllers
             return NoContent();
         }
 
-        // [Consumes("multipart/form-data")]
-        // [HttpPut("{id}/intern-picture")]
-        // public async Task<IActionResult> UpdateInternPicture(int id, [FromForm] IFormFile internPicture)
-        // {
-        //     var account = await _context.Accounts.FindAsync(id);
-        //     if (account == null) return NotFound();
-
-        //     if (internPicture == null || internPicture.Length == 0)
-        //     {
-        //         return BadRequest("No image file provided.");
-        //     }
-
-        //     // ✅ Delete old picture if it exists
-        //     if (!string.IsNullOrEmpty(account.InternPicture))
-        //     {
-        //         await _azureBlobService.DeleteFileAsync(account.InternPicture);
-        //     }
-
-        //     // ✅ Upload new picture
-        //     var newFileName = await _azureBlobService.UploadFileAsync(internPicture);
-        //     account.InternPicture = newFileName;
-
-        //     _context.Accounts.Update(account);
-        //     await _context.SaveChangesAsync();
-
-        //     return NoContent();
-        // }
-
-
-
         // ✅ DELETE: api/account/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)

@@ -52,13 +52,12 @@ namespace api.Data
                 .HasForeignKey(s => s.InternId)
                 .OnDelete(DeleteBehavior.Restrict);  // Change to Restrict
 
-            // ✅ Configure One-to-One Relationship (Intern ↔ Field)
+           // ✅ Configure Many-to-One Relationship (Interns ↔ Field)
             modelBuilder.Entity<Intern>()
-                .HasOne(i => i.Field) // One Intern has One Field
-                .WithOne(f => f.Intern) // One Field has One Intern
-                .HasForeignKey<Intern>(i => i.FieldId) // Foreign Key in Intern table
+                .HasOne(i => i.Field)       // Each Intern has one Field
+                .WithMany(f => f.Interns)   // Each Field can have many Interns
+                .HasForeignKey(i => i.FieldId) // Foreign Key in Intern table
                 .OnDelete(DeleteBehavior.NoAction); // Prevent cascading deletes
-
         }
     }
 }
