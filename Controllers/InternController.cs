@@ -220,13 +220,6 @@ namespace api.Controllers
                     return BadRequest("Invalid FieldId provided.");
                 }
 
-                // Ensure no other intern is assigned to this field
-                var existingInternWithField = await _context.Interns.FirstOrDefaultAsync(i => i.FieldId == internDto.FieldId.Value);
-                if (existingInternWithField != null && existingInternWithField.Id != intern.Id)
-                {
-                    return BadRequest("This Field is already assigned to another Intern.");
-                }
-
                 intern.FieldId = internDto.FieldId.Value;
                 intern.Field = field;
             }

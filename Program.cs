@@ -6,9 +6,16 @@ var builder = WebApplication.CreateBuilder(args);
 // ✅ Load Configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// ✅ Add Database Context (SQL Server)
+// ✅ Add Database Context (SQL Server) with Retry Policy
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,    // Number of retry attempts
+            maxRetryDelay: TimeSpan.FromSeconds(10),  // Delay between retries
+            errorNumbersToAdd: null  // SQL error codes to retry on (default is fine)
+        )
+    )
+);
 
 // ✅ Register AzureBlobService as a Singleton
 builder.Services.AddSingleton<AzureBlobService>();
