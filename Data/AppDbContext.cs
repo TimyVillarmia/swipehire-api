@@ -52,12 +52,31 @@ namespace api.Data
                 .HasForeignKey(s => s.InternId)
                 .OnDelete(DeleteBehavior.Restrict);  // Change to Restrict
 
-           // ✅ Configure Many-to-One Relationship (Interns ↔ Field)
+            // ✅ Configure Many-to-One Relationship (Interns ↔ Field)
             modelBuilder.Entity<Intern>()
                 .HasOne(i => i.Field)       // Each Intern has one Field
                 .WithMany(f => f.Interns)   // Each Field can have many Interns
                 .HasForeignKey(i => i.FieldId) // Foreign Key in Intern table
                 .OnDelete(DeleteBehavior.NoAction); // Prevent cascading deletes
+
+
+            modelBuilder.Entity<AccountType>().HasData(
+                    new AccountType { Id = 1, TypeName = "Intern" },
+                    new AccountType { Id = 2, TypeName = "Recruiter" }
+            );
+
+            modelBuilder.Entity<Field>().HasData(
+                    new Field { Id = 2, Name= "Healthcare" },
+                    new Field { Id = 1, Name= "Technology" },
+                    new Field { Id = 3, Name= "Finance" },
+                    new Field { Id = 4, Name= "Education" },
+                    new Field { Id = 5, Name= "Marketing" },
+                    new Field { Id = 6, Name= "Engineering" },
+                    new Field { Id = 7, Name= "Creative Arts" },
+                    new Field { Id = 8, Name= "Human Resources" },
+                    new Field { Id = 9, Name= "Legal & Laws" },
+                    new Field { Id = 10,Name = "Science & Research" }
+            );
         }
     }
 }
